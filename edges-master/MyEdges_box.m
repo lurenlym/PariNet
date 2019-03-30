@@ -1,12 +1,12 @@
 close all;
 clear;
-root_dir = '/home/liuyuming/SWINT/数据/武汉180605/L_small/';
+root_dir = '/home/liuyuming/SWINT/数据/武汉180605/L/';
 save_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboximg/';
 edgbox_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboxlabel/';
 regionraw_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionraw/';
 regionture_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionture/';
 regionfalse_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionfalse/';
-regionlist = '/home/liuyuming/SWINT/数据/武汉180605/regionlist.txt';
+regionlist = '/3home/liuyuming/SWINT/数据/武汉180605/regionlistall.txt';
 
 fileList=dir(root_dir);
 filenumber = length(fileList);
@@ -21,7 +21,7 @@ opts = edgeBoxes;
 % opts.minScore = .01;  % min score of boxes to detect
 % opts.maxBoxes = 1e4;  % max number of boxes to detect
 opts.alpha = .85;     % step size of sliding window search
-opts.beta  = .7;  % nms threshold for object proposals
+opts.beta  = .65;  % nms threshold for object proposals
 opts.minScore = .1;  % min score of boxes to detect
 opts.maxBoxes = 1e4;  % max number of boxes to detect
 regionlistfid=fopen(regionlist,'w');
@@ -45,7 +45,7 @@ for k = 1:filenumber
     I1(:,:,2)=I;
     I1(:,:,3)=I;
     tic, bbs=edgeBoxes(I1,model,opts); toc
-%     imshow(I1)
+    imshow(I1)
     res=[];
     region_count=0;
     for i =1:size(bbs,1)
@@ -58,13 +58,15 @@ for k = 1:filenumber
             continue;
         end
         res(end+1,:)=bbs(i,:);
+        rectangle('position',bbs(i,1:4),'edgecolor','r');
+
         fprintf(fid,'%d %d %d %d\n',[x,y,w,h]);
         %生成训练数据
         img1 = I(y:y+h,x:x+w);
         %检测框在左侧，则在右侧随机选取一张等大小false,%检测框在右侧，则在上下方随机选取一张等大小false
         if Mid>=x
             imgTure = I(y:y+h,Mid - (x - Mid) - w:Mid - (x - Mid));
-            FalseX = int32((670-x-w)*rand(1))+1;
+            FalseX = int32((670-x-w-w)*rand(1))+x+w;
             imgFalse = I(y:y+h,FalseX:FalseX+w);
         else
             imgTure = I(y:y+h,Mid + (Mid - x) - w:Mid + (Mid - x));
@@ -72,7 +74,7 @@ for k = 1:filenumber
                 FalseY = int32((y-h)*rand(1))+1;
                 imgFalse = I(FalseY:FalseY+h,x:x+w);
             else
-                FalseY = int32((1160/2-h)*rand(1)+1160/2);
+                FalseY = int32((1160/2-h-h)*rand(1)+1160/2+h);
                 imgFalse = I(FalseY:FalseY+h,x:x+w);
             end
             
@@ -114,8 +116,8 @@ for k = 1:filenumber
 % %         end
 %     end
 %    
-    save_name=[save_root,'\',fileList(k).name];
-%     saveas(gcf,save_name)
+    save_name=[save_root,fileList(k).name(1:end-3),'jpg'];
+    saveas(gcf,save_name)
 end
 fclose(regionlistfid);
 
