@@ -1,12 +1,12 @@
 close all;
 clear;
-root_dir = '/home/liuyuming/SWINT/数据/武汉180605/L/';
+root_dir = '/home/liuyuming/SWINT/数据/武汉180605/L_test/';
 save_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboximg/';
 edgbox_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboxlabel/';
 regionraw_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionraw/';
 regionture_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionture/';
 regionfalse_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionfalse/';
-regionlist = '/3home/liuyuming/SWINT/数据/武汉180605/regionlistall.txt';
+regionlist = '/home/liuyuming/SWINT/数据/武汉180605/regionlisttest.txt';
 
 fileList=dir(root_dir);
 filenumber = length(fileList);
@@ -23,7 +23,7 @@ opts = edgeBoxes;
 opts.alpha = .85;     % step size of sliding window search
 opts.beta  = .65;  % nms threshold for object proposals
 opts.minScore = .1;  % min score of boxes to detect
-opts.maxBoxes = 1e4;  % max number of boxes to detect
+opts.maxBoxes = 1e4;  % max number of boxes to d30petect
 regionlistfid=fopen(regionlist,'w');
 %% detect Edge Box bounding box proposals (see edgeBoxes.m)
 for k = 1:filenumber
@@ -31,7 +31,7 @@ for k = 1:filenumber
         continue;
     end
     imgname = fileList(k).name;
-    full_name=[root_dir,imgname];
+    full_name=[root_dir,imgname]
     I = imread(full_name);
     
     labelfile = [edgbox_root,imgname(1:end-3),'txt'];
