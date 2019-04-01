@@ -1,12 +1,14 @@
 close all;
 clear;
-root_dir = '/home/liuyuming/SWINT/数据/武汉180605/L_test/';
-save_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboximg/';
-edgbox_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_edgeboxlabel/';
-regionraw_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionraw/';
-regionture_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionture/';
-regionfalse_root =  '/home/liuyuming/SWINT/数据/武汉180605/L_regionfalse/';
-regionlist = '/home/liuyuming/SWINT/数据/武汉180605/regionlisttest.txt';
+dir = '/home/liuyuming/SWINT/数据/武汉180605/';
+LR = 'L';
+root_dir = [dir,LR,'_','test/'];
+save_root =  [dir,LR,'_','edgeboximg/'];
+edgbox_root =  [dir,LR,'_','dgeboxlabel/'];
+regionraw_root =  [dir,LR,'_','regionraw/'];
+regionture_root =  [dir,LR,'_','regionture/'];
+regionfalse_root =  [dir,LR,'_','regionfalse/'];
+regionlist = [dir,LR,'_','regionlisttest.txt'];
 
 fileList=dir(root_dir);
 filenumber = length(fileList);
