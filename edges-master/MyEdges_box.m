@@ -1,14 +1,14 @@
 close all;
 clear;
-dir = '/home/liuyuming/SWINT/数据/武汉180605/';
+rdir = 'E:\liuyuming\SiameseNet\DATA\WH180605\';
 LR = 'L';
-root_dir = [dir,LR,'_','test/'];
-save_root =  [dir,LR,'_','edgeboximg/'];
-edgbox_root =  [dir,LR,'_','dgeboxlabel/'];
-regionraw_root =  [dir,LR,'_','regionraw/'];
-regionture_root =  [dir,LR,'_','regionture/'];
-regionfalse_root =  [dir,LR,'_','regionfalse/'];
-regionlist = [dir,LR,'_','regionlisttest.txt'];
+root_dir = [rdir,LR,'\','TRAIN\'];
+save_root =  [rdir,LR,'\','edgeboximg\'];
+edgbox_root =  [rdir,LR,'\','edgeboxlabel\'];
+regionraw_root =  [rdir,LR,'\','regionraw\'];
+regionture_root =  [rdir,LR,'\','regionture\'];
+regionfalse_root =  [rdir,LR,'\','regionfalse\'];
+regionlist = [rdir,LR,'\','regionlisttrain.txt'];
 
 fileList=dir(root_dir);
 filenumber = length(fileList);
@@ -23,7 +23,7 @@ opts = edgeBoxes;
 % opts.minScore = .01;  % min score of boxes to detect
 % opts.maxBoxes = 1e4;  % max number of boxes to detect
 opts.alpha = .85;     % step size of sliding window search
-opts.beta  = .65;  % nms threshold for object proposals
+opts.beta  = .6;  % nms threshold for object proposals
 opts.minScore = .1;  % min score of boxes to detect
 opts.maxBoxes = 1e4;  % max number of boxes to d30petect
 regionlistfid=fopen(regionlist,'w');
@@ -63,9 +63,7 @@ for k = 1:filenumber
         rectangle('position',bbs(i,1:4),'edgecolor','r');
 
         fprintf(fid,'%d %d %d %d\n',[x,y,w,h]);
-        %生成训练数据
         img1 = I(y:y+h,x:x+w);
-        %检测框在左侧，则在右侧随机选取一张等大小false,%检测框在右侧，则在上下方随机选取一张等大小false
         if Mid>=x
             imgTure = I(y:y+h,Mid - (x - Mid) - w:Mid - (x - Mid));
             FalseX = int32((670-x-w-w)*rand(1))+x+w;
@@ -112,7 +110,7 @@ for k = 1:filenumber
 % %         img2 = fliplr(img2);
 % %         [feature1,vision] = extractHOGFeatures(double(img1),'CellSize',[8 8]);
 % %         [feature2,vision] = extractHOGFeatures(double(img2),'CellSize',[8 8]);
-% %         hogchidis = distMATChiSquare(feature1,feature2)/w/h
+% %         hogchidis = distMATChiSq     uare(feature1,feature2)/w/h
 % %         if(hogchidis>0.02)
 % %            rectangle('position',res(pick(i),1:4),'edgecolor','r');
 % %         end
