@@ -2,7 +2,8 @@ close all;
 clear;
 rdir = 'E:\liuyuming\SiameseNet\DATA\WH180605\';
 LR = 'L';
-root_dir = [rdir,LR,'\','VAL\'];
+DATASET = 'VAL';
+root_dir = [rdir,LR,'\','DATASET\',DATASET,'\'];
 if exist(root_dir,'dir')==0
    mkdir(root_dir);
 end
@@ -26,12 +27,15 @@ regionfalse_root =  [rdir,LR,'\','regionfalse\'];
 if exist(regionfalse_root,'dir')==0
    mkdir(regionfalse_root);
 end
+regionlist = [rdir,LR,'\','regionlist\',DATASET,'.txt'];
+mergeimg = [rdir,LR,'\','DATASET\','MergeImg',DATASET,'\'];
+if exist(mergeimg,'dir')==0
+   mkdir(mergeimg);
+end
 imshow_root =  [rdir,LR,'\','imshow_root\'];
 if exist(imshow_root,'dir')==0
    mkdir(imshow_root);
 end
-regionlist = [rdir,LR,'\','regionlistval.txt'];
-
 fileList=dir(root_dir);
 filenumber = length(fileList);
 %% load pre-trained edge detection model and set opts (see edgesDemo.m)
@@ -45,11 +49,12 @@ opts = edgeBoxes;
 % opts.minScore = .01;  % min score of boxes to detect
 % opts.maxBoxes = 1e4;  % max number of boxes to detect
 opts.alpha = .7;     % step size of sliding window search
-opts.beta  = 0.5;  % nms threshold for object proposals
-opts.minScore = .09;  % min score of boxes to detect
+opts.beta  = 0.6;  % nms threshold for object proposals
+opts.minScore = .08;  % min score of boxes to detect
 opts.maxBoxes = 1e4;  % max number of boxes to d30petect
 regionlistfid=fopen(regionlist,'w');
 sumcount = 0;
+show_ppresult = 0
 %% detect Edge Box bounding box proposals (see edgeBoxes.m)
 for k = 1:filenumber
     if strcmp(fileList(k).name,'.')==1||strcmp(fileList(k).name,'..')==1
@@ -72,7 +77,9 @@ for k = 1:filenumber
     tic, bbs=edgeBoxes(I1,model,opts); toc
 %     index = NMS(bbs,0.95);
 %     bbs = bbs(index,:);
-    imshow(I1)
+    if show_ppresult==1
+        imshow(I1)
+    end
     res=[];
     region_count=0;
     
@@ -86,26 +93,53 @@ for k = 1:filenumber
             continue;
         end
         res(end+1,:)=bbs(i,:);
-        rectangle('position',bbs(i,1:4),'edgecolor','r');
-
-        fprintf(fid,'%d %d %d %d\n',[x,y,w,h]);
+        
         img1 = I(y:y+h,x:x+w);
-           if Mid>=x
+        if Mid>=x
             imgTure = I(y:y+h,Mid - (x - Mid) - w:Mid - (x - Mid));
         else
             imgTure = I(y:y+h,Mid + (Mid - x) - w:Mid + (Mid - x));
-           end
+        end
+        Interval=376;
+        if y-Interval>1
+            imgTure1 = I(y-Interval:y-Interval+h,x:x+w);
+        else 
+            imgTure1 = I(y+Interval:y+Interval+h,x:x+w);
+        end
+        if y+2*Interval+h>1160
+            imgTure2 = I(1160-h:1160,x:x+w);
+        else
+            imgTure2 = I(y+2*Interval:y+2*Interval+h,x:x+w);
+        end
         [sizex,sizey]=size(I);
         FalseX = int32((sizey-w-1)*rand(1))+1;
         FalseY = int32((sizex-h-1)*rand(1))+1;
         imgFalse = I(FalseY:FalseY+h,FalseX:FalseX+w);
 
         imgTure = fliplr(imgTure);
+        
+        tempimg1 = imresize(img1,[224,224]);
+        tempimg2 = imresize(imgTure,[224,224]);
+        tempimg3 = imresize(imgFalse,[224,224]);
+        [feature1,vision] = extractHOGFeatures(double(tempimg1),'CellSize',[8 8]);
+        [feature2,vision] = extractHOGFeatures(double(tempimg2),'CellSize',[8 8]);
+        [feature3,vision] = extractHOGFeatures(double(tempimg3),'CellSize',[8 8]);
+        hogchidis1 = distMATChiSquare(feature1,feature2);
+        hogchidis2 = distMATChiSquare(feature1,feature3);
+        if(hogchidis2-hogchidis1<200)
+            aaaaaaaaa=0;
+            continue
+        end
+        if show_ppresult==1
+            rectangle('position',bbs(i,1:4),'edgecolor','r');
+        end
+        fprintf(fid,'%d %d %d %d\n',[x,y,w,h]);
+        
         regionname = [imgname(1:end-4),'_',num2str(region_count),'.','jpg'];
-        imwrite(img1,[regionraw_root,regionname]);
-        imwrite(imgTure,[regionture_root,regionname]);
-        imwrite(imgFalse,[regionfalse_root,regionname]);
-        imwrite([img1,imgTure,imgFalse],[imshow_root,regionname]);
+%         imwrite(img1,[regionraw_root,regionname]);
+%         imwrite(imgTure,[regionture_root,regionname]);
+%         imwrite(imgFalse,[regionfalse_root,regionname]);
+        imwrite([img1,imgTure,imgTure1,imgTure2,imgFalse],[imshow_root,regionname]);
         fprintf(regionlistfid,'%s\n',regionname);
         region_count = region_count+1;
         sumcount=sumcount+1;
@@ -138,9 +172,11 @@ for k = 1:filenumber
 % %            rectangle('position',res(pick(i),1:4),'edgecolor','r');
 % %         end
 %     end
-%    
-    save_name=[save_root,fileList(k).name(1:end-3),'jpg'];
-    saveas(gcf,save_name)
+%   
+    if show_ppresult==1
+        save_name=[save_root,fileList(k).name(1:end-3),'jpg'];
+        saveas(gcf,save_name)
+    end
 end
 sumcount
 fclose(regionlistfid);

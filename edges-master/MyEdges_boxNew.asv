@@ -2,7 +2,7 @@ close all;
 clear;
 rdir = 'E:\liuyuming\SiameseNet\DATA\WH180605\';
 LR = 'L';
-DATASET = 'VAL3';
+DATASET = 'TRAIN';
 root_dir = [rdir,LR,'\','DATASET\',DATASET,'\'];
 if exist(root_dir,'dir')==0
    mkdir(root_dir);
@@ -146,10 +146,10 @@ for k = 4:filenumber
         [feature3,vision] = extractHOGFeatures(double(tempimg3),'CellSize',[8 8]);
         hogchidis1 = distMATChiSquare(feature1,feature2);
         hogchidis2 = distMATChiSquare(feature1,feature3);
-        if(hogchidis2-hogchidis1<500)
-            aaaaaaaaa=0;
-            continue
-        end
+%         if(hogchidis2-hogchidis1<500)
+%             aaaaaaaaa=0;
+%             continue
+%         end
         if show_ppresult==1
             rectangle('position',bbs(i,1:4),'edgecolor','r');
         end
@@ -161,7 +161,7 @@ for k = 4:filenumber
         imwrite([img1,imgTure,imgTure1,imgTure2,imgFalse],[imshow_root,regionname]);
         fprintf(regionlistfid,'%s\n',regionname);
         region_count = region_count+1;
-        if region_count>99
+        if region_count>50
             break
         end
     end
